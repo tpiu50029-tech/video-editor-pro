@@ -15,7 +15,10 @@ function addSubtitle(){ alert("Legenda adicionada"); }
 function shareToSocial(){ alert("Compartilhar (visual)"); }
 function previewExport(){ alert("Pré-visualizar (visual)"); }
 function exportVideo(){ alert("Exportar (visual)"); }
+
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+
 function resetAll(){ location.reload(); }
 function newVideo(){ location.reload(); }
+
 
