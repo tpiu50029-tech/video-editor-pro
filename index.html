@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Editor de Vídeo Pro - HD/Full HD</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>🎬 Editor de Vídeo Pro</h1>
+                <p>HD • Full HD • 4K • Legendas Automáticas • Corte Inteligente</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Upload Section -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">🎥</div>
+                    <h2>Selecione ou Arraste seu Vídeo</h2>
+                    <p>Suporta MP4, WebM, MOV, AVI • Máx 500MB</p>
+                    <div class="upload-buttons">
+                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            📂 Escolher da Galeria
+                        </button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('cameraInput').click()">
+                            📹 Gravar Vídeo
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept="video/*" style="display: none;">
+                    <input type="file" id="cameraInput" accept="video/*" capture="environment" style="display: none;">
+                </div>
+            </section>
+
+            <!-- Loading -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p id="loadingText">Carregando vídeo...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">0%</span>
+                </div>
+            </div>
+
+            <!-- Editor Section -->
+            <section class="editor-section" id="editorSection" style="display: none;">
+                
+                <!-- Video Preview -->
+                <div class="video-container">
+                    <video id="videoPreview" controls playsinline></video>
+                    <canvas id="videoCanvas" style="display: none;"></canvas>
+                    
+                    <!-- Video Info -->
+                    <div class="video-info">
+                        <div class="info-item">
+                            <span class="info-label">📹 Duração:</span>
+                            <span id="videoDuration">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">📐 Resolução:</span>
+                            <span id="videoResolution">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">💾 Tamanho:</span>
+                            <span id="videoSize">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="autoSubtitles()">
+                        <span class="icon">📝</span>
+                        <span>Legendas Auto</span>
+                    </button>
+                    <button class="quick-btn" onclick="autoCut()">
+                        <span class="icon">✂️</span>
+                        <span>Corte Auto</span>
+                    </button>
+                    <button class="quick-btn" onclick="enhanceQuality()">
+                        <span class="icon">✨</span>
+                        <span>Melhorar HD</span>
+                    </button>
+                    <button class="quick-btn" onclick="addMusic()">
+                        <span class="icon">🎵</span>
+                        <span>Add Música</span>
+                    </button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" data-tab="edit">✂️ Editar</button>
+                    <button class="tab" data-tab="effects">✨ Efeitos</button>
+                    <button class="tab" data-tab="subtitles">📝 Legendas</button>
+                    <button class="tab" data-tab="export">💾 Exportar</button>
+                </div>
+
+                <!-- Tab Content: Edit -->
+                <div class="tab-content active" id="tab-edit">
+                    
+                    <!-- Timeline -->
+                    <div class="timeline-section">
+                        <h3>⏱️ Linha do Tempo</h3>
+                        <div class="timeline-container">
+                            <div class="timeline-track" id="timelineTrack">
+                                <div class="timeline-playhead" id="playhead"></div>
+                                <div class="trim-handles">
+                                    <div class="trim-handle trim-start" id="trimStart"></div>
+                                    <div class="trim-handle trim-end" id="trimEnd"></div>
+                                </div>
+                            </div>
+                            <div class="timeline-controls">
+                                <span id="currentTime">0:00</span>
+                                <span>/</span>
+                                <span id="totalTime">0:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trim Controls -->
+                    <div class="control-group">
+                        <h3>✂️ Cortar Vídeo</h3>
+                        <div class="control-row">
+                            <label>Início:</label>
+                            <input type="number" id="trimStartInput" min="0" step="0.1" value="0">
+                            <span>segundos</span>
+                        </div>
+                        <div class="control-row">
+                            <label>Fim:</label>
+                            <input type="number" id="trimEndInput" min="0" step="0.1" value="0">
+                            <span>segundos</span>
+                        </div>
+                        <button class="btn btn-secondary" onclick="applyTrim()">Aplicar Corte</button>
+                    </div>
+
+                    <!-- Speed Control -->
+                    <div class="control-group">
+                        <h3>⚡ Velocidade</h3>
+                        <div class="speed-buttons">
+                            <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                            <button class="speed-btn active" onclick="setSpeed(1)">1x</button>
+                            <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                            <button class="speed-btn" onclick="setSpeed(2)">2x</button>
+                        </div>
+                    </div>
+
+                    <!-- Rotation -->
+                    <div class="control-group">
+                        <h3>🔄 Rotação & Espelhamento</h3>
+                        <div class="rotation-controls">
+                            <button class="btn btn-icon" onclick="rotate(-90)" title="Girar Esquerda">↶</button>
+                            <button class="btn btn-icon" onclick="rotate(90)" title="Girar Direita">↷</button>
+                            <button class="btn btn-icon" onclick="flipH()" title="Espelhar Horizontal">⟷</button>
+                            <button class="btn btn-icon" onclick="flipV()" title="Espelhar Vertical">⟱</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Effects -->
+                <div class="tab-content" id="tab-effects">
+                    
+                    <!-- Adjustments -->
+                    <div class="control-group">
+                        <h3>🎨 Ajustes de Cor</h3>
+                        
+                        <div class="slider-control">
+                            <label>Brilho</label>
+                            <input type="range" id="brightness" min="0" max="200" value="100">
+                            <span id="brightnessValue">100%</span>
+                        </div>
+
+                        <div class="slider-control">
+                            <label>Contraste</label>
+                            <input type="range" id="contrast" min="0" max="200" value="100">
+                            <span id="contrastValue">100%</span>
+                        </div>
+
+                        <div class="slider-control">
+                            <label>Saturação</label>
+                            <input type="range" id="saturation" min="0" max="200" value="100">
+                            <span id="saturationValue">100%</span>
+                        </div>
+
+                        <div class="slider-control">
+                            <label>Nitidez</label>
+                            <input type="range" id="sharpness" min="0" max="100" value="0">
+                            <span id="sharpnessValue">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="control-group">
+                        <h3>✨ Filtros</h3>
+                        <div class="filters-grid">
+                            <div class="filter-item active" data-filter="none">
+                                <div class="filter-preview">Original</div>
+                            </div>
+                            <div class="filter-item" data-filter="grayscale">
+                                <div class="filter-preview" style="filter: grayscale(100%)">P&B</div>
+                            </div>
+                            <div class="filter-item" data-filter="sepia">
+                                <div class="filter-preview" style="filter: sepia(100%)">Sépia</div>
+                            </div>
+                            <div class="filter-item" data-filter="vintage">
+                                <div class="filter-preview" style="filter: sepia(50%) contrast(120%)">Vintage</div>
+                            </div>
+                            <div class="filter-item" data-filter="cold">
+                                <div class="filter-preview" style="filter: hue-rotate(180deg)">Frio</div>
+                            </div>
+                            <div class="filter-item" data-filter="warm">
+                                <div class="filter-preview" style="filter: sepia(30%) saturate(150%)">Quente</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transitions -->
+                    <div class="control-group">
+                        <h3>🎬 Transições</h3>
+                        <div class="transition-buttons">
+                            <button class="btn btn-secondary">Fade In</button>
+                            <button class="btn btn-secondary">Fade Out</button>
+                            <button class="btn btn-secondary">Zoom In</button>
+                            <button class="btn btn-secondary">Zoom Out</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Subtitles -->
+                <div class="tab-content" id="tab-subtitles">
+                    
+                    <div class="subtitle-header">
+                        <h3>📝 Legendas</h3>
+                        <button class="btn btn-primary" onclick="generateAutoSubtitles()">
+                            🤖 Gerar Legendas Automáticas
+                        </button>
+                    </div>
+
+                    <div class="subtitle-info">
+                        <p>💡 As legendas serão geradas automaticamente usando reconhecimento de fala</p>
+                    </div>
+
+                    <!-- Subtitle Style -->
+                    <div class="control-group">
+                        <h3>🎨 Estilo da Legenda</h3>
+                        
+                        <div class="control-row">
+                            <label>Fonte:</label>
+                            <select id="subtitleFont">
+                                <option value="Arial">Arial</option>
+                                <option value="Impact" selected>Impact</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                            </select>
+                        </div>
+
+                        <div class="slider-control">
+                            <label>Tamanho</label>
+                            <input type="range" id="subtitleSize" min="16" max="72" value="36">
+                            <span id="subtitleSizeValue">36px</span>
+                        </div>
+
+                        <div class="control-row">
+                            <label>Cor do Texto:</label>
+                            <input type="color" id="subtitleColor" value="#ffffff">
+                        </div>
+
+                        <div class="control-row">
+                            <label>Cor de Fundo:</label>
+                            <input type="color" id="subtitleBgColor" value="#000000">
+                        </div>
+
+                        <div class="control-row">
+                            <label>Posição:</label>
+                            <select id="subtitlePosition">
+                                <option value="top">Topo</option>
+                                <option value="center">Centro</option>
+                                <option value="bottom" selected>Inferior</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Subtitle Editor -->
+                    <div class="subtitle-editor">
+                        <h4>Editar Legendas</h4>
+                        <div id="subtitleList" class="subtitle-list">
+                            <p class="empty-state">Nenhuma legenda ainda. Clique em "Gerar Legendas Automáticas" para começar.</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="addSubtitle()">+ Adicionar Legenda Manual</button>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Export -->
+                <div class="tab-content" id="tab-export">
+                    
+                    <!-- Quality Selection -->
+                    <div class="control-group">
+                        <h3>📺 Qualidade de Exportação</h3>
+                        <div class="quality-grid">
+                            <div class="quality-option" data-quality="720">
+                                <div class="quality-icon">HD</div>
+                                <div class="quality-info">
+                                    <strong>720p HD</strong>
+                                    <span>1280x720 • Boa qualidade</span>
+                                </div>
+                            </div>
+                            <div class="quality-option active" data-quality="1080">
+                                <div class="quality-icon">FHD</div>
+                                <div class="quality-info">
+                                    <strong>1080p Full HD</strong>
+                                    <span>1920x1080 • Alta qualidade</span>
+                                </div>
+                            </div>
+                            <div class="quality-option" data-quality="1440">
+                                <div class="quality-icon">2K</div>
+                                <div class="quality-info">
+                                    <strong>1440p 2K</strong>
+                                    <span>2560x1440 • Muito alta</span>
+                                </div>
+                            </div>
+                            <div class="quality-option" data-quality="2160">
+                                <div class="quality-icon">4K</div>
+                                <div class="quality-info">
+                                    <strong>2160p 4K</strong>
+                                    <span>3840x2160 • Ultra HD</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Format Selection -->
+                    <div class="control-group">
+                        <h3>📄 Formato</h3>
+                        <div class="format-buttons">
+                            <button class="format-btn active" data-format="mp4">MP4</button>
+                            <button class="format-btn" data-format="webm">WebM</button>
+                            <button class="format-btn" data-format="mov">MOV</button>
+                        </div>
+                    </div>
+
+                    <!-- Social Media Presets -->
+                    <div class="control-group">
+                        <h3>📱 Enviar Direto Para</h3>
+                        <div class="social-grid">
+                            <button class="social-btn" onclick="shareToSocial('tiktok')">
+                                <div class="social-icon" style="background: linear-gradient(45deg, #000, #00f2ea, #ff0050);">
+                                    <span style="font-size: 32px;">🎵</span>
+                                </div>
+                                <span>TikTok</span>
+                                <small>9:16 • 60s</small>
+                            </button>
+                            
+                            <button class="social-btn" onclick="shareToSocial('instagram')">
+                                <div class="social-icon" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">
+                                    <span style="font-size: 32px;">📷</span>
+                                </div>
+                                <span>Instagram</span>
+                                <small>Reels/Stories</small>
+                            </button>
+                            
+                            <button class="social-btn" onclick="shareToSocial('youtube')">
+                                <div class="social-icon" style="background: #FF0000;">
+                                    <span style="font-size: 32px;">▶️</span>
+                                </div>
+                                <span>YouTube</span>
+                                <small>Shorts/Vídeo</small>
+                            </button>
+                            
+                            <button class="social-btn" onclick="shareToSocial('facebook')">
+                                <div class="social-icon" style="background: #1877F2;">
+                                    <span style="font-size: 32px;">👍</span>
+                                </div>
+                                <span>Facebook</span>
+                                <small>Feed/Stories</small>
+                            </button>
+                            
+                            <button class="social-btn" onclick="shareToSocial('twitter')">
+                                <div class="social-icon" style="background: #1DA1F2;">
+                                    <span style="font-size: 32px;">🐦</span>
+                                </div>
+                                <span>Twitter/X</span>
+                                <small>Tweet</small>
+                            </button>
+                            
+                            <button class="social-btn" onclick="shareToSocial('whatsapp')">
+                                <div class="social-icon" style="background: #25D366;">
+                                    <span style="font-size: 32px;">💬</span>
+                                </div>
+                                <span>WhatsApp</span>
+                                <small>Status</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Export Buttons -->
+                    <div class="export-actions">
+                        <button class="btn btn-large btn-secondary" onclick="previewExport()">
+                            👁️ Pré-visualizar
+                        </button>
+                        <button class="btn btn-large btn-success" onclick="exportVideo()">
+                            💾 Baixar Vídeo
+                        </button>
+                    </div>
+
+                    <div class="export-info">
+                        <p>💡 <strong>Dica:</strong> Vídeos em HD/Full HD são otimizados para melhor qualidade e menor tamanho</p>
+                    </div>
+                </div>
+
+                <!-- Bottom Actions -->
+                <div class="bottom-actions">
+                    <button class="btn btn-secondary" onclick="resetAll()">🔄 Resetar</button>
+                    <button class="btn btn-secondary" onclick="newVideo()">🎬 Novo Vídeo</button>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- Toast Notifications -->
+        <div class="toast" id="toast"></div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
